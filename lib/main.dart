@@ -8,7 +8,6 @@ import 'package:app_settings/app_settings.dart';
 import 'package:open_file/open_file.dart';
 import 'package:flutter/services.dart';
 
-
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -53,17 +52,15 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
   bool downloading = false;
   var progressString = "0%";
   String downloadStart = "...جاري التنزيل";
 
   var isDownloadContainerVisible = false;
 
-  final GlobalKey<ScaffoldState> scaffoldKey = new GlobalKey<ScaffoldState>();
+  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
 
-  String downloadableUrl = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
+  String downloadableUrl = "https://server11.mp3quran.net/sds/112.mp3";
 
   String filePath;
 
@@ -72,12 +69,9 @@ class _MyHomePageState extends State<MyHomePage> {
   double progress = 0;
   bool isBtnVisible = false;
 
-
-
-
-
   Future<void> downloadFile(String url) async {
     Dio dio = Dio();
+
     setState(() {
       progressString = "0%";
       downloadStart = "downloading...";
@@ -85,12 +79,29 @@ class _MyHomePageState extends State<MyHomePage> {
       isDownloadContainerVisible = true;
     });
     try {
-      await dio.download(url, filePath, onReceiveProgress: (rec, total) {
+      await dio.download(url, filePath, onReceiveProgress: (
+        rec,
+        total,
+      ) {
         print("Rec: $rec , Total: $total");
         setState(() {
           progressString = ((rec / total) * 100).toStringAsFixed(0) + "%";
         });
       });
+      // await dio.downloadUri(
+      //   Uri.parse(url),
+      //   filePath,
+      //   options: Options(
+      //       headers: {
+      //         'Content-Type': 'application/json',
+      //         'SessionToken':
+      //             'H4sIAAAAAAAAAJVTPXMbNxAF5VEsSqIoWVY87jypUih3ww8p9rixTDq2EtrWmMxk7IaD3C2PsHDACdijKBeZpMx/yA/IZPIz0qbKpMgvSJVUqVx5D8RZJ8tFzALgPew+7D68/fUftmwNa0c6DRQmwTDlBtsPdQBzNIrLIBYRCq24OQt6zx4PwVr6OlQTjfnwv797n95dYlt9tv6NNsdCJY90bmyfrUxpj7TFF6wp7CM+g4M4FerIwGzAVr7IpXzCU0B2bfCSz3gouUrCIRoiuDtgm0OkGiqEyJqLOHsiw5FIgYKWR/oY1An7jtUGbPVrC+ah0XlmPbLm0/v87C1ELWZcnRU3e2gjhgnPJfYWJ8i6AwoKSYew1CH0OoTnOoT9C1lUzLrncSUga38Ii8shjm3P8dQkXIlXvAhDdudDqKqpxNgUKoIYFB4ZPRGS5O5cZhMKwdFRnECw4eHFJOJpSJ0IVUhcka5uvRP6pby2Yg3W+l91V9xE93yU0xWeb57d+4S5373ni72GbM2Z6JZbybONwhMBeSIoPIE/ftn4q/3byRJjc8M23FmOQgZ9jjB9+UPtq+d48wodZqcrju+PX36e02PVWsjqrd32bme3u7uHNA3IE8iyjG5oXZqKUq7AyxW8IxfzxS6xmwN2g1N7iYLYvfERmFS4fr1i2zzHqTbiFcQj3ZPawmiEbLsyEve1lsCLt2xE9McM6UpqhxcEWwP2cdV2l+jXIBbYmxqtROQTGonU33J5IKU+hdiDzQVYNmI9vJkUrH2wkREZntNedfhhjGyzUulAu9Gtu8OKTdYcQAONeTmH64WdIi5d1f6yjZQrUj0egpmJCDxaV5N0XA1rZmAm2lBwBFTZsYevGR4LfVAVu5TYwOINUvdEMKPNJ20ZrbHHyXPP4CQX5q0eq5aPLyq0Y6f6lKAHaSb1GYAdcXtc6lS3OhqPgKclcBUhmo4PH/vPdYR87GsrG1tFHBcPnpsSWZlp6rvMmjv3bTkPF/IG3gi/3zLf//nT63+XWO0FW55xmcM8Y0XKjut453whA78LvT/ufUFuoVHgxaQhu/5Zd2+/273d7XTae53P97utzp19NzpvAONR/ZE+BgAA',
+      //       },
+      //       method: "POST",
+      //       extra: {
+
+      //       }),
+      // );
     } catch (e) {
       print(e);
     }
@@ -107,48 +118,40 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> requestPermission() async {
     try {
-      final status =  await Permission.storage.request();
+      final status = await Permission.storage.request();
       PermissionStatus _permissionStatus = status;
-      if(_permissionStatus.isGranted){
+      if (_permissionStatus.isGranted) {
         openFile(downloadableUrl);
-      }else if(_permissionStatus.isDenied){
+      } else if (_permissionStatus.isDenied) {
         showError("");
-      }else if(_permissionStatus.isPermanentlyDenied){
+      } else if (_permissionStatus.isPermanentlyDenied) {
         showError("");
         AppSettings.openAppSettings();
       }
     } on PlatformException catch (e) {
       if (e.code == 'PERMISSION_DENIED') {
-        error ="";
+        error = "";
       } else if (e.code == 'PERMISSION_DENIED_NEVER_ASK') {
         error =
-        'Permission denied - please ask the user to enable it from the app settings';
+            'Permission denied - please ask the user to enable it from the app settings';
       }
-      if (Platform.isIOS)
-        showError("");
+      if (Platform.isIOS) showError("");
     } catch (_) {
-      if (Platform.isIOS)
-        showError("");
+      if (Platform.isIOS) showError("");
 
       return;
     }
   }
 
-
   void openFile(String url) async {
     var dir;
     if (Platform.isAndroid) {
-      dir = (await getExternalStorageDirectory())
-          .path;
+      dir = (await getExternalStorageDirectory()).path;
     } else {
-      dir =
-          (await getApplicationDocumentsDirectory())
-              .path;
+      dir = (await getApplicationDocumentsDirectory()).path;
     }
-    filePath =
-    "$dir/${url.substring(url.lastIndexOf('/') + 1)}";
+    filePath = "$dir/${url.substring(url.lastIndexOf('/') + 1)}";
     print("file path $filePath");
-
 
     File file = new File(filePath);
     var isExist = await file.exists();
@@ -165,17 +168,18 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-
   void showError(String error) {
     scaffoldKey.currentState.hideCurrentSnackBar();
     scaffoldKey.currentState.showSnackBar(
       SnackBar(
-        content: Text(error,
-            textAlign: TextAlign.center,
-            ),
+        content: Text(
+          error,
+          textAlign: TextAlign.center,
+        ),
       ),
     );
   }
+
   Row dismissPopupButton() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -229,16 +233,14 @@ class _MyHomePageState extends State<MyHomePage> {
     return Visibility(
       visible: isBtnVisible,
       child: Container(
-        width:
-        MediaQuery.of(context).size.width * 0.28,
+        width: MediaQuery.of(context).size.width * 0.28,
         child: RaisedButton(
           color: Colors.red,
           child: FittedBox(
             fit: BoxFit.fitWidth,
             child: Text(
               "open",
-              style: TextStyle(
-                  color: Colors.white),
+              style: TextStyle(color: Colors.white),
             ),
           ),
           onPressed: () {
@@ -246,7 +248,7 @@ class _MyHomePageState extends State<MyHomePage> {
               isDownloadContainerVisible = false;
             });
             print(filePath);
-           openFile(downloadableUrl);
+            openFile(downloadableUrl);
           },
         ),
       ),
@@ -266,8 +268,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             TextSpan(
               text: downloadStart,
-              style:
-              TextStyle(color: Colors.black),
+              style: TextStyle(color: Colors.black),
             ),
           ]),
         ),
@@ -275,8 +276,8 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  SizedBox showCircularIndecator() => SizedBox(height: 20, width: 20, child: CircularProgressIndicator());
-
+  SizedBox showCircularIndecator() =>
+      SizedBox(height: 20, width: 20, child: CircularProgressIndicator());
 
   @override
   Widget build(BuildContext context) {
@@ -290,12 +291,8 @@ class _MyHomePageState extends State<MyHomePage> {
             children: <Widget>[
               Flexible(
                   child: Stack(
-                    children: <Widget>[
-                      Container(
-                      ),
-                      ShowOrHideDownloadDialog()
-                    ],
-                  )),
+                children: <Widget>[Container(), ShowOrHideDownloadDialog()],
+              )),
             ],
           )),
       floatingActionButton: FloatingActionButton(
